@@ -1,0 +1,16 @@
+{
+  "name": "kartograf",
+  "version": "0.1.0",
+  "description": "Front-end for 'sputnik' library.",
+  "private": "true",
+  "main": "src/index.ts",
+  "keywords": [],
+  "author": "Igor Spichkin",
+  "license": "MIT",
+  "dependencies": {
+    "leaflet": "^1.7.1"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.7.8"
+  }
+}
