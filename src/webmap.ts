@@ -3,7 +3,7 @@ import {
   BaseLayers,
   Config,
   FileLayerPathGetter,
-  getLayerFileName,
+  getLayerFolder,
   LayerWithName,
   Map,
   MapWithName,
@@ -77,7 +77,7 @@ class Webmap {
     this._config = params.config
     this._map = params.map
     this._layersControl = L.control.layers().addTo(this.webmap)
-    this._pathGetter = params.pathGetter || getLayerFileName
+    this._pathGetter = params.pathGetter || getLayerFolder
   }
 
   initialize() {
@@ -123,16 +123,23 @@ class Webmap {
 
     for (const levelName in this.map.levels) {
       const level = this.map.levels[levelName]
-      const underlays: L.ImageOverlay[] = []
+      const underlays: L.TileLayer[] = []
 
       if (level.underlays) {
         for (const underlayName of level.underlays) {
           underlays.push(
-            L.imageOverlay(
-              this._pathGetter(this.mapName, underlayName, this.map.layers[0]),
-              this.map.bounds,
+            L.tileLayer(
+              `${this._pathGetter(
+                this.mapName,
+                underlayName,
+                this.map.layers[0]
+              )}/{z}/{x}/{y}.png`,
               {
                 className: 'UnderlayLayer',
+                bounds: this.map.bounds,
+                maxZoom: 4,
+                maxNativeZoom: 4,
+                tileSize: 1024,
               }
             )
           )
@@ -140,9 +147,18 @@ class Webmap {
       }
 
       baseLayers[levelName] = L.layerGroup(underlays).addLayer(
-        L.imageOverlay(
-          this._pathGetter(this.mapName, levelName, this.map.layers[0]),
-          this.map.bounds
+        L.tileLayer(
+          `${this._pathGetter(
+            this.mapName,
+            levelName,
+            this.map.layers[0]
+          )}/{z}/{x}/{y}.png`,
+          {
+            bounds: this.map.bounds,
+            maxZoom: 4,
+            maxNativeZoom: 4,
+            tileSize: 1024,
+          }
         )
       )
     }
@@ -160,9 +176,18 @@ class Webmap {
 
       for (const layerName of this.map.layers.slice(1)) {
         const layer = this.config.layers[layerName]
-        overlays[levelName][layer.display] = L.imageOverlay(
-          this._pathGetter(this.mapName, levelName, layerName),
-          this.map.bounds
+        overlays[levelName][layer.display] = L.tileLayer(
+          `${this._pathGetter(
+            this.mapName,
+            levelName,
+            layerName
+          )}/{z}/{x}/{y}.png`,
+          {
+            bounds: this.map.bounds,
+            maxZoom: 4,
+            maxNativeZoom: 4,
+            tileSize: 1024,
+          }
         )
       }
     }

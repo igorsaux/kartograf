@@ -5,12 +5,12 @@ export * from './types'
 
 import { Map, FileLayerPathGetter, BaseLayers } from './types'
 
-export function getLayerFileName(
+export function getLayerFolder(
   mapName: string,
   levelName: string,
   layerName: string
 ): string {
-  return `${mapName}-${levelName}-${layerName}.png`
+  return `${mapName}-${levelName}-${layerName}`
 }
 
 export function getBaseLayersForMap(
@@ -18,7 +18,7 @@ export function getBaseLayersForMap(
   map: Map,
   pathGetter?: FileLayerPathGetter
 ): BaseLayers {
-  pathGetter = pathGetter || getLayerFileName
+  pathGetter = pathGetter || getLayerFolder
   let layers: BaseLayers = {}
 
   for (const levelName in map.levels) {

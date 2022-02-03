@@ -73,6 +73,6 @@ export type BaseLayers = { [name: string]: L.LayerGroup }
 
 export type Overlays = {
   [levelName: string]: {
-    [name: string]: L.ImageOverlay
+    [name: string]: L.TileLayer
   }
 }
