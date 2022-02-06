@@ -56,11 +56,21 @@ export type Selector = {
 
 export type Rule = ByPath | UseSelector
 
+export type LayerSingleType = {
+  type: 'Single'
+}
+
+export type LayerTilesType = {
+  type: 'Tiles'
+  tileSize: number
+}
+
 export type Config = {
   dme: string
   layers: Layers
   groups: Maps
   selectors: Selectors
+  layerSettings?: LayerSingleType | LayerTilesType
 }
 
 export type FileLayerPathGetter = (
@@ -73,6 +83,6 @@ export type BaseLayers = { [name: string]: L.LayerGroup }
 
 export type Overlays = {
   [levelName: string]: {
-    [name: string]: L.TileLayer
+    [name: string]: L.TileLayer | L.ImageOverlay
   }
 }

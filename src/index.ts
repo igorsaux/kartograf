@@ -13,6 +13,14 @@ export function getLayerFolder(
   return `${mapName}-${levelName}-${layerName}`
 }
 
+export function getLayerImage(
+  mapName: string,
+  levelName: string,
+  layerName: string
+): string {
+  return `${getLayerFolder(mapName, levelName, layerName)}.png`
+}
+
 export function getBaseLayersForMap(
   mapName: string,
   map: Map,

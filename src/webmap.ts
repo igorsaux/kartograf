@@ -4,6 +4,7 @@ import {
   Config,
   FileLayerPathGetter,
   getLayerFolder,
+  getLayerImage,
   LayerWithName,
   Map,
   MapWithName,
@@ -77,7 +78,16 @@ class Webmap {
     this._config = params.config
     this._map = params.map
     this._layersControl = L.control.layers().addTo(this.webmap)
-    this._pathGetter = params.pathGetter || getLayerFolder
+
+    if (!params.pathGetter) {
+      if (this.config.layerSettings?.type === 'Tiles') {
+        this._pathGetter = getLayerFolder
+      } else {
+        this._pathGetter = getLayerImage
+      }
+    } else {
+      this._pathGetter = params.pathGetter
+    }
   }
 
   initialize() {
@@ -123,12 +133,14 @@ class Webmap {
 
     for (const levelName in this.map.levels) {
       const level = this.map.levels[levelName]
-      const underlays: L.TileLayer[] = []
+      const underlays: L.TileLayer[] | L.ImageOverlay[] = []
 
       if (level.underlays) {
         for (const underlayName of level.underlays) {
-          underlays.push(
-            L.tileLayer(
+          let underlay
+
+          if (this._config.layerSettings?.type === 'Tiles') {
+            underlay = L.tileLayer(
               `${this._pathGetter(
                 this.mapName,
                 underlayName,
@@ -139,15 +151,27 @@ class Webmap {
                 bounds: this.map.bounds,
                 maxZoom: 4,
                 maxNativeZoom: 4,
-                tileSize: 1024,
+                tileSize: this._config.layerSettings.tileSize,
               }
             )
-          )
+          } else {
+            underlay = L.imageOverlay(
+              this._pathGetter(this.mapName, underlayName, this.map.layers[0]),
+              this.map.bounds,
+              {
+                className: 'UnderlayLayer',
+              }
+            )
+          }
+
+          underlays.push(underlay)
         }
       }
 
-      baseLayers[levelName] = L.layerGroup(underlays).addLayer(
-        L.tileLayer(
+      let baseLayer
+
+      if (this._config.layerSettings?.type === 'Tiles') {
+        baseLayer = L.tileLayer(
           `${this._pathGetter(
             this.mapName,
             levelName,
@@ -157,10 +181,17 @@ class Webmap {
             bounds: this.map.bounds,
             maxZoom: 4,
             maxNativeZoom: 4,
-            tileSize: 1024,
+            tileSize: this._config.layerSettings.tileSize,
           }
         )
-      )
+      } else {
+        baseLayer = L.imageOverlay(
+          this._pathGetter(this.mapName, levelName, this.map.layers[0]),
+          this.map.bounds
+        )
+      }
+
+      baseLayers[levelName] = L.layerGroup(underlays).addLayer(baseLayer)
     }
 
     return baseLayers
@@ -176,19 +207,30 @@ class Webmap {
 
       for (const layerName of this.map.layers.slice(1)) {
         const layer = this.config.layers[layerName]
-        overlays[levelName][layer.display] = L.tileLayer(
-          `${this._pathGetter(
-            this.mapName,
-            levelName,
-            layerName
-          )}/{z}/{x}/{y}.png`,
-          {
-            bounds: this.map.bounds,
-            maxZoom: 4,
-            maxNativeZoom: 4,
-            tileSize: 1024,
-          }
-        )
+        let overlay
+
+        if (this._config.layerSettings?.type === 'Tiles') {
+          overlay = L.tileLayer(
+            `${this._pathGetter(
+              this.mapName,
+              levelName,
+              layerName
+            )}/{z}/{x}/{y}.png`,
+            {
+              bounds: this.map.bounds,
+              maxZoom: 4,
+              maxNativeZoom: 4,
+              tileSize: 1024,
+            }
+          )
+        } else {
+          overlay = L.imageOverlay(
+            this._pathGetter(this.mapName, levelName, layerName),
+            this.map.bounds
+          )
+        }
+
+        overlays[levelName][layer.display] = overlay
       }
     }
 
